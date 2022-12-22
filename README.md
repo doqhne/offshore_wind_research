@@ -10,3 +10,4 @@ This repository contains my code for my research on how offshore wind farms migh
   veer values for various layers of the atmosphere.
 - compare.py: Code that compares two files containing information on LLJ's and produces plots to summarize the data
 - run_compare.sh: Script to easily run compare.py for multiple file pairs.
+- utils.py: File containing functions used in detection.py
