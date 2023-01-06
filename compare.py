@@ -2,7 +2,6 @@
 
 # ### Imports
 
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -309,5 +308,69 @@ for i in range(m1, m2):
 plt.box(False)
     
 plt.savefig(f'{args.plot_path}/windrose_monthly_{wf_name}.png')
+
+plt.close()
+
+
+# LLJ classification by month
+
+class_ds = pd.concat([nwf, wf]).dropna()
+class_ds.Time = pd.to_datetime(class_ds.Time)
+
+llj0 = class_ds[class_ds['LLJ-classification']==0]
+llj1 = class_ds[class_ds['LLJ-classification']==1]
+llj2 = class_ds[class_ds['LLJ-classification']==2]
+llj3 = class_ds[class_ds['LLJ-classification']==3]
+
+lljs = [llj0, llj1, llj2, llj3]
+colors = ['lightskyblue', 'cornflowerblue', 'steelblue', 'darkslategray']
+
+plt.figure(figsize=(11, 5))
+
+ax = plt.gca()
+
+for i, el in enumerate(lljs):
+    
+    hgts = []
+    for j in range(m1, m2):
+        if j in el.Time.groupby(el.Time.dt.month).count():
+            hgts.append(el.Time.groupby(el.Time.dt.month).count()[j])
+        else:
+            hgts.append(0)
+    ax.bar(x=np.arange(m1, m2), height=hgts, label=f'LLJ{i}', color=colors[i])
+
+ax.set_xticks(np.arange(m1, m2))
+ax.set_xlabel('Month of the year')
+ax.set_ylabel('Number of LLJs')
+plt.title(f'LLJ classification by month at {location}')
+plt.legend()
+
+plt.savefig(f'{args.plot_path}/class_by_month.png')
+
+plt.close()
+
+# now plot for time of day
+
+plt.figure(figsize=(11, 5))
+
+ax = plt.gca()
+
+for i, el in enumerate(lljs):
+    
+    hgts = []
+    for j in range(24):
+        if j in el.Time.groupby(el.Time.dt.hour).count():
+            hgts.append(el.Time.groupby(el.Time.dt.hour).count()[j])
+        else:
+            hgts.append(0)
+    ax.bar(x=np.arange(0, 24), height=hgts, label=f'LLJ{i}', color=colors[i])
+
+ax.set_xticks(np.arange(0, 24))
+ax.set_xlabel('Hour of the Day')
+ax.set_ylabel('Number of LLJs')
+plt.title(f'LLJ classification by time of day at {location}')
+plt.legend()
+
+plt.savefig(f'{args.plot_path}/class_by_time.png')
 
 plt.close()
