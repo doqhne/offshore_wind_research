@@ -10,6 +10,8 @@ from matplotlib.lines import Line2D
 from windrose import plot_windrose
 import matplotlib.cm as cm
 import argparse
+import warnings
+warnings.filterwarnings('ignore')
 
 parser = argparse.ArgumentParser(
                 description='Compare LLJs for nwf and wf',
@@ -42,8 +44,22 @@ if wf_name == "CA100":
     nwf_df = pd.read_csv(f'LLJ_data/{args.nwf_file}')
     nwf = pd.concat([nwf_df.set_index('Time').loc['2019-09-01':'2019-11-01'], 
                      nwf_df.set_index('Time').loc['2020-07-01':]]).reset_index()
+    time_period = "July-October"
+    m1 = 7
+    m2 = 11
+    # These values for windrose subplots
+    srows = 1
+    scols = 5
+    lineup = 6
 else:
     nwf = pd.read_csv(f'LLJ_data/{args.nwf_file}')
+    time_period = "whole_year"
+    m1 = 1
+    m2 = 13
+    # These values for windrose subplots
+    srows = 2
+    scols = 6
+    lineup = 0
 wf =  pd.read_csv(f'LLJ_data/{args.wf_file}')
 
 # ### LLJ Classification
@@ -234,14 +250,6 @@ plt.close()
 # ### Wind rose
 
 # Whole year - nwf and wf subplot
-if wf_name == 'CA100':
-    time_period = "July-October"
-    m1 = 7
-    m2 = 11
-else:
-    time_period = "whole_year"
-    m1 = 1
-    m2 = 13
 
 fig = plt.figure(figsize=(14, 10))
 
@@ -272,16 +280,19 @@ fig = plt.figure(figsize=(25, 11))
 plt.axis('off')
 plt.title("Monthly wind roses - NWF", fontsize=20)
 
-for i in range(m1, m2):
-    df = nwf[nwf.Time.dt.month == i]
+for i in range(m1-lineup, m2-lineup):
+    df = nwf[nwf.Time.dt.month == i + lineup]
     
     direction = df['Wind direction at nose (degrees)']
     speed = df['Nose windspeed (m/s)']
     
-    ax = fig.add_subplot(2, 6, i, projection="windrose")
+    ax = fig.add_subplot(srows, scols, i, projection="windrose")
     ax.bar(direction, speed, bins=np.arange(10, 30, 5))
     ax.set_legend(prop={'size': 6})
-    ax.set_title(f'Month={i}', fontsize=13)
+    ax.set_title(f'Month={i + lineup}', fontsize=13)
+    # Avoid matplotlib bug with ylimits for empty data
+    ylim = ax.get_ylim()
+    ax.set_ylim(ylim)
 plt.box(False)
     
 plt.savefig(f'{args.plot_path}/windrose_monthly_nwf.png')
