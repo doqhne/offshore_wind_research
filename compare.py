@@ -63,6 +63,40 @@ else:
     lineup = 0
 wf =  pd.read_csv(f'LLJ_data/{args.wf_file}')
 
+
+# NEW PLOT: LLJ durations
+
+def find_durations(ds):
+    durations = []
+    thisdur = 0
+    for i in range(len(ds)):
+        if np.isnan(ds.iloc[i][1]):
+            if thisdur > 1:
+                durations.append(thisdur)
+            thisdur = 0
+        else:
+            thisdur += 1
+            
+    return np.array(durations)
+
+wf_durs = find_durations(wf)
+nwf_durs = find_durations(nwf)
+
+plt.hist(nwf_durs, bins=np.arange(1.5, 11.5), width=0.9, alpha=0.6, label='NWF', color='blue')
+plt.hist(wf_durs, bins=np.arange(1.5, 11.5), width=0.9, alpha=0.6, label=wf_name, color='orange')
+
+ax = plt.gca()
+plt.xlabel('Duration (hours)')
+plt.ylabel('Occurrences')
+plt.title(f'Durations of LLJs at {location}')
+ax.set_xticks(np.arange(2, 11))
+plt.legend()
+
+plt.savefig(f'{args.plot_path}/durations.png')
+
+plt.close()
+
+
 # ### NEW PLOT: LLJ Classification histogram
 
 plt.figure()
@@ -363,9 +397,10 @@ plt.close()
 
 # NEW PLOT: plot for time of day
 
-plt.figure(figsize=(11, 5))
+plt.figure(figsize=(11, 6))
 
 ax = plt.gca()
+ax2 = ax.twiny()
 
 for i, el in enumerate(lljs):
     
@@ -376,13 +411,59 @@ for i, el in enumerate(lljs):
         else:
             hgts.append(0)
     ax.bar(x=np.arange(0, 24), height=hgts, label=f'LLJ{i}', color=colors[i])
+    ax2.bar(x=np.arange(0, 24), height=hgts, label=f'LLJ{i}', color=colors[i])
 
 ax.set_xticks(np.arange(0, 24))
+ax2.set_xticks(ax.get_xticks())
+ax2.set_xticklabels((np.arange(0, 24) - 5) % 24)
+ax2.set_xlabel('Hour of the Day (EST)')
 ax.set_xlabel('Hour of the Day')
 ax.set_ylabel('Number of LLJs')
 plt.title(f'LLJ classification by time of day at {location}')
-plt.legend()
+plt.legend();
 
 plt.savefig(f'{args.plot_path}/class_by_time.png')
 
 plt.close()
+
+# NEW PLOT: Mean Rotor region veer (degrees/m) by month
+
+if wf_name != 'CA100':
+    plt.figure()
+
+    nwf_veer = nwf['Rotor region veer (degrees/m)'].groupby(nwf.Time.dt.month).mean()
+    wf_veer = wf['Rotor region veer (degrees/m)'].groupby(wf.Time.dt.month).mean()
+
+    plt.scatter(x=np.arange(1, 13), y=nwf_veer, marker='*', label='NWF')
+    plt.scatter(x=np.arange(1, 13), y=wf_veer, marker='^', label=wf_name)
+
+    plt.title(f'Rotor region(~30-250m) veer by month at {location}')
+    plt.xlabel('Month')
+    plt.xticks(np.arange(1, 13))
+    plt.ylabel('Mean veer (degrees/m)')
+    plt.legend()
+
+    plt.savefig(f'{args.plot_path}/rotorveer_by_month.png')
+
+    plt.close()
+    
+# NEW PLOT: Mean veer (degrees/m) from sfc-nose by month
+
+if wf_name != 'CA100':
+    plt.figure()
+
+    nwf_veer = nwf['Surface to nose veer (degrees/m)'].groupby(nwf.Time.dt.month).mean()
+    wf_veer = wf['Surface to nose veer (degrees/m)'].groupby(wf.Time.dt.month).mean()
+
+    plt.scatter(x=np.arange(1, 13), y=nwf_veer, marker='*', label='NWF')
+    plt.scatter(x=np.arange(1, 13), y=wf_veer, marker='^', label=wf_name)
+
+    plt.title(f'Surface to nose veer by month at {location}')
+    plt.xlabel('Month')
+    plt.xticks(np.arange(1, 13))
+    plt.ylabel('Mean veer (degrees/m)')
+    plt.legend()
+
+    plt.savefig(f'{args.plot_path}/snveer_by_month.png')
+
+    plt.close()
