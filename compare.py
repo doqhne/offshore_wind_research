@@ -10,6 +10,7 @@ from matplotlib.lines import Line2D
 from windrose import plot_windrose
 import matplotlib.cm as cm
 import argparse
+from mycolorpy import colorlist as mcp
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -62,7 +63,7 @@ else:
     lineup = 0
 wf =  pd.read_csv(f'LLJ_data/{args.wf_file}')
 
-# ### LLJ Classification
+# ### NEW PLOT: LLJ Classification histogram
 
 plt.figure()
 
@@ -103,13 +104,13 @@ plt.savefig(f'{args.plot_path}/classifications.png')
 plt.close()
 
 
-# ### Number of events
+# ### PRINT TO TERMINAL: Number of events
 
 print(f'Number of LLJs at {location}:')
 print(f'{wf_name}: ', len(wf) - wf['LLJ-classification'].isna().sum())
 print('NWF: ', len(nwf) - nwf['LLJ-classification'].isna().sum())
 
-# ### Time of day
+# ### NEW PLOT: Time of day
 
 wf.Time = pd.to_datetime(wf.Time)
 nwf.Time = pd.to_datetime(nwf.Time)
@@ -160,7 +161,7 @@ plt.savefig(f'{args.plot_path}/timeofday.png')
 plt.close();
 
 
-# ### Seasonality
+# ### NEW PLOT: Seasonality
 
 if wf_name != 'CA100':
 
@@ -193,7 +194,7 @@ if wf_name != 'CA100':
 
     plt.close()
 
-# ### Nose height by LLJ classification 
+# ### NEW PLOT: Nose height by LLJ classification 
 
 # make df variable for each level of LLJ
 l0_nwf = nwf[nwf['LLJ-classification']==0]
@@ -247,9 +248,9 @@ plt.savefig(f'{args.plot_path}/noseheights.png')
 
 plt.close()
 
-# ### Wind rose
+# ### Wind rose plots
 
-# Whole year - nwf and wf subplot
+# NEW PLOT: Whole year - nwf and wf subplot
 
 fig = plt.figure(figsize=(14, 10))
 
@@ -273,7 +274,7 @@ plt.savefig(f'{args.plot_path}/windrose_{time_period}.png')
 
 plt.close()
 
-# Monthly - NWF
+# NEW PLOT: Monthly - NWF
 
 fig = plt.figure(figsize=(25, 11))
 
@@ -299,7 +300,7 @@ plt.savefig(f'{args.plot_path}/windrose_monthly_nwf.png')
 
 plt.close()
 
-# Monthly - WF
+# NEW PLOT: Monthly - WF
 
 fig = plt.figure(figsize=(25, 11))
 
@@ -323,7 +324,7 @@ plt.savefig(f'{args.plot_path}/windrose_monthly_{wf_name}.png')
 plt.close()
 
 
-# LLJ classification by month
+# NEW PLOT: LLJ classification by month
 
 class_ds = pd.concat([nwf, wf]).dropna()
 class_ds.Time = pd.to_datetime(class_ds.Time)
@@ -334,7 +335,7 @@ llj2 = class_ds[class_ds['LLJ-classification']==2]
 llj3 = class_ds[class_ds['LLJ-classification']==3]
 
 lljs = [llj0, llj1, llj2, llj3]
-colors = ['lightskyblue', 'cornflowerblue', 'steelblue', 'darkslategray']
+colors = mcp.gen_color(cmap="viridis", n=4)
 
 plt.figure(figsize=(11, 5))
 
@@ -360,7 +361,7 @@ plt.savefig(f'{args.plot_path}/class_by_month.png')
 
 plt.close()
 
-# now plot for time of day
+# NEW PLOT: plot for time of day
 
 plt.figure(figsize=(11, 5))
 
