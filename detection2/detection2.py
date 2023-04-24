@@ -56,7 +56,7 @@ nwf_files_all = sorted(nwf_2019 + nwf_2020)
 nwf_files_all = nwf_files_all[::6]  # hourly data
 
 # set up preprocessing to avoid issues with variables that do not match
-variables = ['XLAT', 'XLONG', 'XTIME', 'U', 'V', 'PH', 'PHB', 'HGT', 'HFX', 'UST', 'T']
+variables = ['XLAT', 'XLONG', 'XTIME', 'U', 'V', 'PH', 'PHB', 'HGT', 'HFX', 'UST', 'T', 'T2', 'QVAPOR', 'PSFC']
 def _preprocess(x):
     return x[variables]
 partial_func = partial(_preprocess)
@@ -65,11 +65,11 @@ partial_func = partial(_preprocess)
 
 full_df = pd.DataFrame()
 
-print('Data read-in complete', time.time() - starttime)
+print('File list created', time.time() - starttime)
 
 for period in range(0, 61):  # there are 61 six day period in a leap year
     # select a 144 hour long period
-    nwf_files = nwf_files_all[period*144:(period*144)+144]
+    nwf_files = nwf_files_all[period*144:(period*144)+144] # change to 144
     
     if period != 10:
         ds = xr.open_mfdataset(nwf_files, 
@@ -86,29 +86,33 @@ for period in range(0, 61):  # there are 61 six day period in a leap year
                                engine = 'netcdf4',
                                chunks = {'Time':1},
                                preprocess=partial_func)
+
     # Read in latitude, longitude, time, height, and winds
-    lats_   = ds['XLAT'] 
-    lons_   = ds['XLONG']  
-    times_  = ds['XTIME']  
-    U_      = ds['U']      
-    V_      = ds['V']
+    lats   = ds['XLAT'] 
+    lons   = ds['XLONG']  
+    times  = ds['XTIME'].values
+    U      = ds['U']      
+    V      = ds['V']
     # variables for Obukhov length and BVF
-    ust_ = ds.UST # friction velocity
-    hfx_ = ds.HFX # vertical turbulent heat flux
-    theta_v_ = ds.T + 300 # virtual potential temperature
+    ust = ds.UST # friction velocity
+    hfx = ds.HFX # vertical turbulent heat flux
+    T2 = ds.T2 # 2m temp
+    T = ds.T + 300 # potential temp
+    r = ds.QVAPOR # mixing ratio
+    pres = ds.PSFC / 100 # surface pressure, in mbar
 
     # find windspeed
-    U_ = utils.destagger(ds.U, 3)
-    U_ = U_.rename({'west_east_stag': 'west_east'})
-    V_ = utils.destagger(ds.V, 2)
-    V_ = V_.rename({'south_north_stag': 'south_north'})
-    wspd_ = np.sqrt((U_**2)+(V_**2))
+    U = utils.destagger(ds.U, 3)
+    U = U.rename({'west_east_stag': 'west_east'})
+    V = utils.destagger(ds.V, 2)
+    V = V.rename({'south_north_stag': 'south_north'})
+    wspd = np.sqrt((U**2)+(V**2))
     
     # select location
     
     # Select lat/lon values
-    lon_vals = lons_.sel(Time=0)
-    lat_vals = lats_.sel(Time=0)
+    lon_vals = lons.sel(Time=0)
+    lat_vals = lats.sel(Time=0)
 
     # Find index of lat lon values  40.95N, -70.59E
     lon_idx = utils.find_lat_lon_idx(lon_vals, lat_vals, lon=args.lon, lat=args.lat)[1]
@@ -119,12 +123,15 @@ for period in range(0, 61):  # there are 61 six day period in a leap year
     lat_val = float(lat_vals.sel(west_east=lon_idx, south_north=lat_idx).values)
 
     # Select this location in data
-    wspd = wspd_.sel(south_north=lat_idx, west_east=lon_idx)
-    U = U_.sel(south_north=lat_idx, west_east=lon_idx)
-    V = V_.sel(south_north=lat_idx, west_east=lon_idx)
-    ust = ust_.sel(south_north=lat_idx, west_east=lon_idx)
-    hfx = hfx_.sel(south_north=lat_idx, west_east=lon_idx)
-    theta_v = theta_v_.sel(south_north=lat_idx, west_east=lon_idx)
+    wspd = wspd.sel(south_north=lat_idx, west_east=lon_idx)
+    U = U.sel(south_north=lat_idx, west_east=lon_idx)
+    V = V.sel(south_north=lat_idx, west_east=lon_idx)
+    ust = ust.sel(south_north=lat_idx, west_east=lon_idx)
+    hfx = hfx.sel(south_north=lat_idx, west_east=lon_idx)
+    T = T.sel(south_north=lat_idx, west_east=lon_idx)
+    T2 = T2.sel(south_north=lat_idx, west_east=lon_idx)
+    pres = pres.sel(south_north=lat_idx, west_east=lon_idx)
+    r = r.sel(south_north=lat_idx, west_east=lon_idx)
     
     # find heights
 
@@ -138,25 +145,28 @@ for period in range(0, 61):  # there are 61 six day period in a leap year
 
     HGT = ds.HGT.sel(south_north=lat_idx, west_east=lon_idx)
     z = np.array((PH+PHB)/9.81-HGT)
+    del PH, PHB, HGT, lats, lons
     
     # index where heights are closest to 2000m
     # find the index of z at 2000m
     hgts_2k = []
-    for i in range(24):
+    hgts_1k = []
+    for i in range(144):
         hgts_2k.append(len(z[i][z[i]<2200])-1)
+        hgts_1k.append(len(z[i][z[i]<1200])-1)
     hgt_2k_idx = np.max(hgts_2k)
+    hgt_1k_idx = np.max(hgts_1k)
 
-    # Subset data to just 2km and below
+    # Subset data to just ~2km and below
     wspd = wspd.sel(bottom_top=slice(0, hgt_2k_idx))
     U = U.sel(bottom_top=slice(0, hgt_2k_idx))
     V = V.sel(bottom_top=slice(0, hgt_2k_idx))
-    theta_v = theta_v.sel(bottom_top=slice(0, hgt_2k_idx))
+    T = T.sel(bottom_top=slice(0, hgt_2k_idx))
+    r = r.sel(bottom_top=slice(0, hgt_2k_idx))
     z = z[:, :hgt_2k_idx]
     
     # calculate wind direction
     wdirs = mpcalc.wind_direction(U.values*units('m/s'), V.values*units('m/s')).magnitude
-    
-    times = times_.values
 
     # Create empty lists for each column
     LLJ_classifications = []
@@ -181,10 +191,14 @@ for period in range(0, 61):  # there are 61 six day period in a leap year
     wind_dirs_nose = []
     obukhov_lengths = []
     bvfs = []
-    
-    # calculate Obukhov length
-    rmol = utils.obukhov(ust, hfx, theta_v.mean(dim='bottom_top'))
 
+    # calculate Obukhov length
+    rmol = utils.obukhov(ust.values*units('m/s'), 
+                         T2.values*units('K'),
+                         hfx.values*units('W/m^2'),
+                         r.sel(bottom_top=0).values*units('kg/kg'),
+                         pres.values*units('mbar')).magnitude
+    
     for i in range(len(times)):
         # select data for this timestep
         wspd_i = wspd.sel(Time=i).values
@@ -194,8 +208,8 @@ for period in range(0, 61):  # there are 61 six day period in a leap year
         wdir_i = wdirs[i]
 
         # find maximum windspeed and index
-        ws_max = wspd_i.max()
-        ws_max_idx = np.argmax(wspd_i)
+        ws_max = wspd_i[: hgt_1k_idx+1].max()
+        ws_max_idx = np.argmax(wspd_i[: hgt_1k_idx+1])
         # find nose height
         nose_hgt = heights_i[ws_max_idx]
         # find shear above nose
@@ -262,7 +276,7 @@ for period in range(0, 61):  # there are 61 six day period in a leap year
             sfc_nose_veers_divm.append(utils.find_veer(wdir_i, u, l) / dz)
 
             # calcualte BVF - surface to nose
-            bvfs.append(utils.BVF(theta_v[i].values, dz, ws_max_idx))
+            bvfs.append(utils.BVF(T[i].values*units('K'), dz*units('m'), ws_max_idx))
 
             # add sfc to rotor top shear and veer to columns
             l = 0
@@ -306,8 +320,11 @@ for period in range(0, 61):  # there are 61 six day period in a leap year
     full_df = pd.concat([full_df, df])
 
     if (period%10==0):
-        full_df.to_csv(f'part{period}.csv')
+        os.system("!rm part*") # delete old part
+        full_df.to_csv(f'part_{args.sim}_{period}.csv') # save new part
 
     print(f'Loop {period} completed: {time.time() - starttime}')
+    
+    del U, V, T, r, z, pres, T2, wspd, wdirs, rmol, bvfs
         
 full_df.to_csv(args.output_file)

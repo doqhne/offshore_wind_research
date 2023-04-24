@@ -1,4 +1,6 @@
 import numpy as np
+import metpy.calc as mpcalc
+from metpy.units import units
 
 def destagger(var, stagger_dim):
     '''
@@ -44,9 +46,9 @@ def is_LLJ(ws, hgt, shear):
     '''determine if the timestep is an LLJ'''
     if ws < 10:
         return False
-    if hgt > 1000:
+    if hgt > 750:
         return False
-    if shear < 2.5:
+    if shear < 3:
         return False
     else:
         return True
@@ -54,17 +56,17 @@ def is_LLJ(ws, hgt, shear):
 def find_classification(ws, shear):
     '''
             max ws    shear above nose
-    LLJ-0:    10          2.5
-    LLJ-1     12          3
-    LLJ-2     16          4
-    LLJ-3     20          5
+    LLJ-0:    10          3
+    LLJ-1     12          5
+    LLJ-2     16          8
+    LLJ-3     20          10
     '''
     
-    if ((ws>=20) and (shear>=5)):
+    if ((ws>=20) and (shear>=10)):
         return 3
-    elif ((ws>=16) and (shear>=4)):
+    elif ((ws>=16) and (shear>=8)):
         return 2
-    elif ((ws>=12) and (shear>=3)):
+    elif ((ws>=12) and (shear>=5)):
         return 1
     else:
         return 0
@@ -85,24 +87,46 @@ def find_dz(z, lower, upper):
     return z[upper] - z[lower]
 
 
-def obukhov(ust, hfx, T300):
-    g = 9.8
-    k = 0.4
+def obukhov(UST, T, HFX_d, r, PRESS):
+    '''
+    Input: timeseries of variables at the POI
+    Output: The Obukhov length at the POI
+    '''
+    ## set up constants
+    k  = 0.4
+    g  = 9.81*units('m/s^2')
+    Rd = 287*units('J/kg')/(1*units('K'))
+    Cp = 1004.67*units('J/kg')/(1*units('K'))
+    rho_Cp = 1.216e3*units('W/m^2')/(1*units('kelvin meter/second'))
     
-    t1 = (ust**3) * T300
-    t2 = k*g*hfx
+    ### NUMERATOR
+    # Calculate potential temperature using 2-m temperature and surface pressure
+    TH = T*((1000*units('mbar')/PRESS)**(0.286))
+    # convert to virtual potential temperature to account for moisture
+    Tv = TH*(1+(0.61*r))
+    numer = -1*(UST**3)*Tv
     
-    return (-1 * (t2/t1))
+    ### DENOMINATOR
+    # convert dynamic heat flux to kinematic heat flux
+    HFX_k = HFX_d/rho_Cp
+    denom = k*g*HFX_k
+    
+    ### calculate Obukhov length
+    rmol = numer/denom
+    return(rmol)
 
 
-def BVF(theta_v_arr, dz, nose_idx, sfc_idx=0):
-    g = 9.8
-    tv = 300
+def BVF(TH, dz, nose_idx, sfc_idx=0):
+    g = 9.8*units('m/s^2')
+    tv = 300*units('K')
     const = g / tv
     
-    dtv = np.abs(theta_v_arr[nose_idx] - theta_v_arr[sfc_idx])
+    dth = TH[nose_idx] - TH[sfc_idx] # change in potential temperature with height
     
-    return np.sqrt(const * (dtv / dz))
+    if dth < 0:
+        return np.nan
+    else:
+        return np.sqrt(const * (dth / dz))
 
 
 def find_veer(wd, u, l):
