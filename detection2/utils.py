@@ -116,17 +116,17 @@ def obukhov(UST, T, HFX_d, r, PRESS):
     return(rmol)
 
 
-def BVF(TH, dz, nose_idx, sfc_idx=0):
-    g = 9.8*units('m/s^2')
-    tv = 300*units('K')
-    const = g / tv
+# def BVF(TH, dz, nose_idx, sfc_idx=0):
+#     g = 9.8*units('m/s^2')
+#     tv = 300*units('K')
+#     const = g / tv
     
-    dth = TH[nose_idx] - TH[sfc_idx] # change in potential temperature with height
+#     dth = TH[nose_idx] - TH[sfc_idx] # change in potential temperature with height
     
-    if dth < 0:
-        return np.nan
-    else:
-        return np.sqrt(const * (dth / dz))
+#     if dth < 0:
+#         return np.nan
+#     else:
+#         return np.sqrt(const * (dth / dz))
 
 
 def find_veer(wd, u, l):
