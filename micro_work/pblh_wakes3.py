@@ -6,7 +6,7 @@ Flagging:
 - if the number of total waked points is less than 4, no plot is created as we can't create a polygon
 - if there are no labels with at least 5% of points in the wind farm, no plots is created as no wake can be identified
 - if the number of total waked points is less than 200, flag
-- if the percentage of points in the wind farm that are waked is less than 40%, flag
+- if less than 40% of the wind farm is waked, flag
 - if the ratio selected wake points / total waked points is less than 0.2, flag
 '''
 
@@ -55,7 +55,7 @@ def get_pct2(df):
     '''find the percentage of points that are in the wind farm'''
     in_wf = df.apply(lambda row: in_cloud(Point(row['lon'],row['lat'])), axis=1)
     pct = (len(df[in_wf]) / len(df)) *100
-    return pct, len(df[in_wf]
+    return pct, len(df[in_wf])
 
 def wake_distance(hull_points, ref=(-70.59, 40.95)):
     '''Find the distance between the reference point and the array of points. 
@@ -95,7 +95,7 @@ def pblh_options(nwf, la, twaked_diff, wdir):
     upnwf = nwf.PBLH.isel(Time=0, south_north=lat_idx, west_east=lon_idx).values
     
     return ONEla, ONEnwf, medla, mednwf, mnla, mnnwf, upla, upnwf
-
+                    
 def select_label(df):
     '''Choose the best label for the wake'''
     # all options for the labels
@@ -109,7 +109,7 @@ def select_label(df):
     # find the percentage of points in the wind farm for each label
     pcts = []
     for l in labels_nonoise:
-        pct = get_pct2(df[df.labels==l])
+        pct = get_pct2(df[df.labels==l])[0]
         pcts.append(pct)
         
     # select only labels with 15% or more points in the wind farm
@@ -178,9 +178,6 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
         pct = get_pct2(df[df.labels==l])[0]
         pcts.append(pct)
         
-#     if np.array(pcts).max()<20:
-#         flag = 1
-        
     # select the label with the most points in the wind farm
     label = select_label(df)
     if label==None:
@@ -193,6 +190,11 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
     for p in all_points:
         all_inwf.append(in_cloud(Point(p)))
     tpoints = np.array(all_points)[all_inwf]
+    
+    # find the mean pblh in the lease area
+    pblh_lease = float(nwf_ds.PBLH.isel(Time=0).where(np.array(all_inwf).reshape(258, 465), np.nan).mean())
+    
+    # apply the flag
     if (get_pct2(df[df.labels==label])[1] / len(tpoints)) < 0.4:
         flag = 1
     
@@ -239,7 +241,7 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
         plt.savefig(f'plots/concave_hulls2/hull{time}_{nwf_files_stable[time][72:-3]}.png')
         plt.close()
         
-    return area, dist, flag
+    return area, dist, flag, pblh_lease
       
     
 # read in turbine location data, ONEcent pblh data, ONEcent wdir data, ONEcent stability data
@@ -273,6 +275,7 @@ dists = []
 # uplas = []
 # upnwfs = []
 flags = []
+la_pblhs = []
 
 # loop through each stable time: make a plot of the wake area and save the pblh, wake info to lists
 start = 0
@@ -282,7 +285,7 @@ for time in range(start, len(nwf_files_stable)):
         save_plot = True
     else:
         save_plot = False
-    area, dist, flag = plot_concave_hull(time, save_plot=save_plot)
+    area, dist, flag, la_pblh = plot_concave_hull(time, save_plot=save_plot)
     wake_areas.append(area)
     dists.append(dist)
 #     ONElas.append(ONEla)
@@ -294,6 +297,7 @@ for time in range(start, len(nwf_files_stable)):
 #     uplas.append(upla)
 #     upnwfs.append(upnwf)
     flags.append(flag)
+    la_pblhs.append(la_pblh)
     
     if time%500==0:
         df = pd.DataFrame()
@@ -309,8 +313,9 @@ for time in range(start, len(nwf_files_stable)):
 #         df['upstream_nwf'] = upnwfs
 #         df['upstream_la'] = uplas
         df['flag'] = flags
+        df['mean_la_pblh'] = la_pblhs
 
-        df.to_csv(f'wakes2_{time}.csv')
+        df.to_csv(f'wakes3_{time}.csv')
         del df
     
 df = pd.DataFrame()
@@ -326,5 +331,6 @@ df['wake_dist_km'] = dists
 # df['upstream_nwf'] = upnwfs
 # df['upstream_la'] = uplas
 df['flag'] = flags
+df['mean_la_pblh'] = la_pblhs
 
-df.to_csv('wakes2.csv')
+df.to_csv('wakes3.csv')
