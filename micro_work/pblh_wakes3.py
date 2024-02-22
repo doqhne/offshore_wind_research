@@ -136,6 +136,17 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
     nwf_wspd = calc_windspeed(nwf_ds).isel(bottom_top=11, Time=0)
     la_wspd = calc_windspeed(la_ds).isel(bottom_top=11, Time=0)
 
+    # Create a list of points in the wind farm for later flagging
+    all_points = list(zip(nwf_ds.XLONG.isel(Time=0).values.ravel(), 
+                          nwf_ds.XLAT.isel(Time=0).values.ravel()))
+    all_inwf = [] 
+    for p in all_points:
+        all_inwf.append(in_cloud(Point(p)))
+    tpoints = np.array(all_points)[all_inwf]
+    
+    # find the mean pblh in the lease area
+    pblh_lease = float(nwf_ds.PBLH.isel(Time=0).where(np.array(all_inwf).reshape(258, 465), np.nan).mean())
+    
     # calculate the wind speed difference
     wspd_diff = la_wspd - nwf_wspd
     
@@ -160,7 +171,7 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
     # avoid issues with the concave algorithm or polygon creation
     if len(points_filt1)<4:
         print('error')
-        return np.nan, np.nan, 1
+        return np.nan, np.nan, 1, pblh_lease
     elif len(points_filt1)<200:
         flag = 1
     
@@ -181,18 +192,7 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
     # select the label with the most points in the wind farm
     label = select_label(df)
     if label==None:
-        return np.nan, np.nan, 1
-                    
-    # Flagging: how much of the wind farm is waked? If less than 40%, flag
-    all_points = list(zip(nwf_ds.XLONG.isel(Time=0).values.ravel(), 
-                          nwf_ds.XLAT.isel(Time=0).values.ravel()))
-    all_inwf = [] 
-    for p in all_points:
-        all_inwf.append(in_cloud(Point(p)))
-    tpoints = np.array(all_points)[all_inwf]
-    
-    # find the mean pblh in the lease area
-    pblh_lease = float(nwf_ds.PBLH.isel(Time=0).where(np.array(all_inwf).reshape(258, 465), np.nan).mean())
+        return np.nan, np.nan, 1, pblh_lease
     
     # apply the flag
     if (get_pct2(df[df.labels==label])[1] / len(tpoints)) < 0.4:
