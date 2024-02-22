@@ -6,7 +6,7 @@ Flagging:
 - if the number of total waked points is less than 4, no plot is created as we can't create a polygon
 - if there are no labels with at least 5% of points in the wind farm, no plots is created as no wake can be identified
 - if the number of total waked points is less than 200, flag
-- if the percentage of waked points in the wind farm is less than 20%, flag
+- if the percentage of points in the wind farm that are waked is less than 40%, flag
 - if the ratio selected wake points / total waked points is less than 0.2, flag
 '''
 
@@ -55,7 +55,7 @@ def get_pct2(df):
     '''find the percentage of points that are in the wind farm'''
     in_wf = df.apply(lambda row: in_cloud(Point(row['lon'],row['lat'])), axis=1)
     pct = (len(df[in_wf]) / len(df)) *100
-    return pct
+    return pct, len(df[in_wf]
 
 def wake_distance(hull_points, ref=(-70.59, 40.95)):
     '''Find the distance between the reference point and the array of points. 
@@ -175,16 +175,26 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
     
     pcts = []
     for l in df.labels.unique():
-        pct = get_pct2(df[df.labels==l])
+        pct = get_pct2(df[df.labels==l])[0]
         pcts.append(pct)
         
-    if np.array(pcts).max()<20:
-        flag = 1
+#     if np.array(pcts).max()<20:
+#         flag = 1
         
     # select the label with the most points in the wind farm
     label = select_label(df)
     if label==None:
         return np.nan, np.nan, 1
+                    
+    # Flagging: how much of the wind farm is waked? If less than 40%, flag
+    all_points = list(zip(nwf_ds.XLONG.isel(Time=0).values.ravel(), 
+                          nwf_ds.XLAT.isel(Time=0).values.ravel()))
+    all_inwf = [] 
+    for p in all_points:
+        all_inwf.append(in_cloud(Point(p)))
+    tpoints = np.array(all_points)[all_inwf]
+    if (get_pct2(df[df.labels==label])[1] / len(tpoints)) < 0.4:
+        flag = 1
     
     df_filt = df[df.labels==label] # filter the dataframe for points in the wake
     points_filt = np.array(list(zip(df_filt.lon, df_filt.lat))) # put the points in a form suitable for concave_hull algorithm
@@ -205,6 +215,10 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
     print(area, dist)
     
     if save_plot:
+        if flag == 1:
+            title_color = 'r'
+        else:
+            title_color = 'k'
         plt.scatter(la_turbines.longitude, la_turbines.latitude, s=1, color='grey', label='turbines')
         plt.scatter(points_filt1[:, 0], points_filt1[:, 1], s=2, alpha=0.5, color='powderblue', label='1 m/s deficit')
         plt.scatter(points_filt[:, 0], points_filt[:, 1], s=2, alpha=0.5, color='tab:blue', label='selected wake')
@@ -214,7 +228,8 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
 
         plt.xlim(-72.5, -67.5)
         plt.ylim(39, 42.2)
-        plt.title(f'Wake area: {area:.0f} $km^{2}$ ; dist: {dist:.1f}km ; {nwf_files_stable[time][72:-3]} ; time: {time}')
+        plt.title(f'Wake area: {area:.0f} $km^{2}$ ; dist: {dist:.1f}km ; {nwf_files_stable[time][72:-3]} ; time: {time}',
+                  color=title_color)
         lgnd = plt.legend()
 
         lgnd.legend_handles[0]._sizes = [60]
