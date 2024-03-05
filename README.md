@@ -12,6 +12,7 @@ This repository contains my code for my research on how offshore wind farms migh
     - pblh_wakes3.py : Code to find the wind farm wake area and distance for all stable times, also generates plots showing detected wake
     - plots2.py : Make plots comparing the NWF and LA100 simulations for different variables
     - wake_detection_clean.ipynb : A demonstration of the method used to determine the wake area/distance in pblh_wakes3.py
+    - plot_panels.py : Make panel plots comparing the NWF and LA100 simulations for differernt variables
 - notebooks/ contains notebooks used to analyze LLJ data. 
     - d2_panels.ipynb : Code used to create figures 10, 11, 16, 17, 18, 19, and 20 in Offshore wind farms modify low-level jets
     - fast_LLJ.ipynb : Code to create fig 21
