@@ -276,7 +276,7 @@ idxs = np.array([0, 1, 2, 3, 4])
 var_names = [var_names[i] for i in idxs]
 data_list = [data_list[i] for i in idxs]
 
-# start with stability panels
+# make panels for each variable
 for i, var in enumerate(data_list):
     print(f'{var_names[i]}')
     print('- Generating stability panel')
