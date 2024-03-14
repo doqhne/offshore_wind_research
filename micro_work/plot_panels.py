@@ -3,7 +3,7 @@
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
+import matplotlib as mpl
 import pandas as pd
 import glob
 import cartopy.crs as ccrs
@@ -30,47 +30,51 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
     --- m, mappable to use for the figure colorbar, a figure is also saved
     '''
     
+   
     # calculate the difference between nwf and la100
     diff = la100[variable].mean(dim='XTIME') - nwf[variable].mean(dim='XTIME')
-    print(f'--- diff calculated: {desc}, {variable}')
-#     print(diff.min().values, diff.max().values)
+    print(f'--- diff calculated: {desc}, {variable}, {diff.min().values:.3f}, {diff.max().values:.3f}')
     
     # determine how many points we have
     num_points = len(nwf.XTIME.values)
 
     wesn_vw = [-72, -69.5, 40.3, 42.2]
     
-    cmap = plt.cm.bwr#.reversed()
+    cmap = plt.cm.bwr
+    
     if variable == 'HFX':
-        levels = np.arange(-3.5, 3.6, .1)
+        levels = np.arange(-3.5, 3.6, .25)
     elif variable == 'PBLH':
-        levels = np.arange(-100, 101, 2)
+        levels = np.arange(-110, 111, 10)
     elif variable == 'QKE':
-        levels = np.arange(-2.5, 2.55, 0.05)
+#         levels = np.arange(-2.5, 2.55, 0.25) # hub
+        levels = np.arange(-0.35, 0.36, 0.025) # surface
     elif variable == 'hub_wspd':
-        levels = np.arange(-3, 3.05, 0.05)
+        levels = np.arange(-3, 3.05, 0.3)
     else: #T2
-        levels = np.arange(-0.25, 0.26, 0.01)
-        cmap = 'bwr'
+        levels = np.arange(-0.25, 0.26, 0.025)
+    
+    # plot turbines
+    ax.scatter(la_turbines[1], la_turbines[0], s=3, color='grey')
+    
     m = ax.contourf(lons.isel(Time=0), 
                     lats.isel(Time=0), 
                     diff,
+                    cmap=cmap,
                     levels=levels,
-                    cmap=cmap)
+                    alpha=0.8)
 
-    ax.add_feature(cfeature.LAND, facecolor='grey', alpha=0.95, zorder=10)
+    ax.add_feature(cfeature.LAND, facecolor='grey', zorder=10)
     ax.coastlines()
 
     lon_formatter = LongitudeFormatter()
     lat_formatter = LatitudeFormatter()
 
-    ax.scatter(la_turbines[1], la_turbines[0], s=1, color='grey')
-
     ax.set_title(f'Difference in {variable} ; {desc} ; {num_points} hours', fontsize=11)
     
     return m
 
-def wd_panel(nwf, la, var_name):
+def wd_panel(nwf, la, var_name, h):
     '''Plot a 4 panel plot for each wind direction for a given variable'''
     
     fig, axs = plt.subplots(nrows=2, ncols=2, 
@@ -123,11 +127,11 @@ def wd_panel(nwf, la, var_name):
     cbar.ax.tick_params(labelsize=13)
     cbar.set_label(label='LA100 - NWF', size=13)
     
-    fig.savefig(f'plots/difference_maps/panels/{var_name}_wdir_panel.png', bbox_inches='tight')
+    fig.savefig(f'plots/difference_maps/panels/{var_name}{h}_wdir_panel.png', bbox_inches='tight')
     
     plt.close()
     
-def stablity_panel(nwf, la, var_name):
+def stablity_panel(nwf, la, var_name, h):
     '''create a 3 panel plot for each stability class for a given variable'''
     
     fig, axs = plt.subplots(nrows=1, ncols=3, 
@@ -171,11 +175,11 @@ def stablity_panel(nwf, la, var_name):
     cbar.ax.tick_params(labelsize=13)
     cbar.set_label(label='LA100 - NWF', size=14)
     
-    fig.savefig(f'plots/difference_maps/panels/{var_name}_stability_panel.png', bbox_inches='tight')
+    fig.savefig(f'plots/difference_maps/panels/{var_name}{h}_stability_panel.png', bbox_inches='tight')
     
     plt.close()
     
-def wspd_panel(nwf, la, var_name):
+def wspd_panel(nwf, la, var_name, h):
     '''create plots by hub height wind speed for a given variable '''
     
     fig, axs = plt.subplots(nrows=1, ncols=3, 
@@ -219,7 +223,7 @@ def wspd_panel(nwf, la, var_name):
     cbar.ax.tick_params(labelsize=13)
     cbar.set_label(label='LA100 - NWF', size=14)
 
-    fig.savefig(f'plots/difference_maps/panels/{var_name}_wspd_panel.png', bbox_inches='tight')
+    fig.savefig(f'plots/difference_maps/panels/{var_name}{h}_wspd_panel.png', bbox_inches='tight')
     
     plt.close()
 
@@ -232,8 +236,11 @@ la_turbines = pd.read_csv('../turbine_locs/la100_turbines.csv', header=None, sep
 f1 = xr.open_dataset('/pl/active/JKL_REAL/N_Atl/reruns_Beiter/wrfouts/nwf/2019/09/wrfout_d02_2019-09-01_00:00:00')
                                
 # nwf and la100 files for each variable
-qkehub_nwf = xr.open_dataset('out/nwf_QKEhub.nc')
-qkehub_la = xr.open_dataset('out/la_QKEhub.nc')
+# qkehub_nwf = xr.open_dataset('out/nwf_QKEhub.nc')
+# qkehub_la = xr.open_dataset('out/la_QKEhub.nc')
+
+qkehub_nwf = xr.open_dataset('out/nwf_QKE.nc') # ACTUALLY SFC!!
+qkehub_la = xr.open_dataset('out/la_QKE.nc')
 
 hfx_nwf = xr.open_dataset('out/nwf_HFX.nc')
 hfx_la = xr.open_dataset('out/la_HFX.nc')
@@ -272,16 +279,19 @@ data_list = [[qkehub_nwf, qkehub_la], [hfx_nwf, hfx_la], [pbl_nwf, pbl_la], [t2_
 # ---- MAKE PLOTS FOR EACH VARIABLE ----
 
 # subset just variables we want
-idxs = np.array([0, 1, 2, 3, 4])
+idxs = np.array([0])
 var_names = [var_names[i] for i in idxs]
 data_list = [data_list[i] for i in idxs]
 
 # make panels for each variable
 for i, var in enumerate(data_list):
+    h = ''
+    if var_names[i] == 'QKE':
+        h = 'sfc'
     print(f'{var_names[i]}')
     print('- Generating stability panel')
-    stablity_panel(var[0], var[1], var_names[i])
+    stablity_panel(var[0], var[1], var_names[i], h=h)
     print('- Generating wind direction panel')
-    wd_panel(var[0], var[1], var_names[i])
+    wd_panel(var[0], var[1], var_names[i], h=h)
     print('- Generating wind speed panel')
-    wspd_panel(var[0], var[1], var_names[i])
+    wspd_panel(var[0], var[1], var_names[i], h=h)
