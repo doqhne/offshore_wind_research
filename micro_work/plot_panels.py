@@ -43,14 +43,15 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
     cmap = plt.cm.bwr
     
     if variable == 'HFX':
-        levels = np.arange(-3.5, 3.6, .25)
+        levels = np.arange(-3.5, 3.6, .5)
     elif variable == 'PBLH':
-        levels = np.arange(-110, 111, 10)
-    elif variable == 'QKE':
-#         levels = np.arange(-2.5, 2.55, 0.25) # hub
-        levels = np.arange(-0.35, 0.36, 0.025) # surface
+        levels = np.arange(-120, 121, 20)
+    elif variable == 'QKEhub':
+        levels = np.arange(-2.5, 2.55, 0.25) # hub
+    elif variable == 'QKEsfc':
+        levels = np.arange(-0.25, 0.26, 0.025) # surface
     elif variable == 'hub_wspd':
-        levels = np.arange(-3, 3.05, 0.3)
+        levels = np.arange(-4, 4.5, 0.5)
     else: #T2
         levels = np.arange(-0.25, 0.26, 0.025)
     
@@ -70,11 +71,11 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
     lon_formatter = LongitudeFormatter()
     lat_formatter = LatitudeFormatter()
 
-    ax.set_title(f'Difference in {variable} ; {desc} ; {num_points} hours', fontsize=11)
+    ax.set_title(f'{variable} difference; {desc} ; {num_points} hours', fontsize=13)
     
     return m
 
-def wd_panel(nwf, la, var_name, h):
+def wd_panel(nwf, la, var_name):
     '''Plot a 4 panel plot for each wind direction for a given variable'''
     
     fig, axs = plt.subplots(nrows=2, ncols=2, 
@@ -114,11 +115,13 @@ def wd_panel(nwf, la, var_name, h):
     for ax in [ax0, ax2]:
         ax.set_ylabel('Latitude [degrees]', fontsize=13)
         ax.set_yticks(np.arange(40.5, 42.1, .5), crs=ccrs.PlateCarree())
+        ax.set_yticklabels(np.arange(40.5, 42.1, .5), fontsize=12)
         ax.yaxis.set_major_formatter(lat_formatter)
 
     for ax in [ax2, ax3]:
         ax.set_xlabel('Longitude [degrees]', fontsize=13)
         ax.set_xticks(np.arange(-71.5, -69.5, .5), crs=ccrs.PlateCarree())
+        ax.set_xticklabels(np.arange(-71.5, -69.5, .5), fontsize=12)
         ax.xaxis.set_major_formatter(lon_formatter)
 
     fig.subplots_adjust(right=0.8, wspace=0.04, hspace=0)
@@ -127,11 +130,11 @@ def wd_panel(nwf, la, var_name, h):
     cbar.ax.tick_params(labelsize=13)
     cbar.set_label(label='LA100 - NWF', size=13)
     
-    fig.savefig(f'plots/difference_maps/panels/{var_name}{h}_wdir_panel.png', bbox_inches='tight')
+    fig.savefig(f'plots/difference_maps/panels/{var_name}_wdir_panel.png', bbox_inches='tight')
     
     plt.close()
     
-def stablity_panel(nwf, la, var_name, h):
+def stablity_panel(nwf, la, var_name):
     '''create a 3 panel plot for each stability class for a given variable'''
     
     fig, axs = plt.subplots(nrows=1, ncols=3, 
@@ -162,11 +165,13 @@ def stablity_panel(nwf, la, var_name, h):
     
     ax0.set_ylabel('Latitude [degrees]', fontsize=14)
     ax0.set_yticks(np.arange(40.5, 42.1, .5), crs=ccrs.PlateCarree())
+    ax0.set_yticklabels(np.arange(40.5, 42.1, .5), fontsize=12)
     ax0.yaxis.set_major_formatter(lat_formatter)
 
     for ax in axs:
         ax.set_xlabel('Longitude [degrees]', fontsize=14)
         ax.set_xticks(np.arange(-71.5, -69.5, .5), crs=ccrs.PlateCarree())
+        ax.set_xticklabels(np.arange(-71.5, -69.5, .5), fontsize=12)
         ax.xaxis.set_major_formatter(lon_formatter)
 
     fig.subplots_adjust(right=0.8, wspace=0.05)
@@ -175,12 +180,12 @@ def stablity_panel(nwf, la, var_name, h):
     cbar.ax.tick_params(labelsize=13)
     cbar.set_label(label='LA100 - NWF', size=14)
     
-    fig.savefig(f'plots/difference_maps/panels/{var_name}{h}_stability_panel.png', bbox_inches='tight')
+    fig.savefig(f'plots/difference_maps/panels/{var_name}_stability_panel.png', bbox_inches='tight')
     
     plt.close()
     
-def wspd_panel(nwf, la, var_name, h):
-    '''create plots by hub height wind speed for a given variable '''
+def wspd_panel(nwf, la, var_name):
+    '''create plots by hub height wind speed for a given variable, stable SW winds only '''
     
     fig, axs = plt.subplots(nrows=1, ncols=3, 
                         sharey=True, 
@@ -191,30 +196,50 @@ def wspd_panel(nwf, la, var_name, h):
     ax2 = axs[2]
 
     # 0-3 m/s
-    nwf0 = nwf.sel(XTIME=(vwwind['130m ws']<=3).values)
-    la0 = la.sel(XTIME=(vwwind['130m ws']<=3).values)
+#     nwf0 = nwf.sel(XTIME=(vwwind['130m ws']<=3).values)
+#     la0 = la.sel(XTIME=(vwwind['130m ws']<=3).values)
+    nwf0 = nwf.sel(XTIME=((vwwind['130m ws']<=3) & 
+                          (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
+                          (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
+    la0 = la.sel(XTIME=((vwwind['130m ws']<=3) & 
+                        (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
+                        (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
     m = plot_var_vw(nwf0, la0, var_name, '0-3 m s$^{-1}$', ax0)
     del nwf0, la0
     
     # 3-11 m/s
-    nwf1 = nwf.sel(XTIME=((vwwind['130m ws']>3) & (vwwind['130m ws']<=11)).values)
-    la1 = la.sel(XTIME=((vwwind['130m ws']>3) & (vwwind['130m ws']<=11)).values)
+#     nwf1 = nwf.sel(XTIME=((vwwind['130m ws']>3) & (vwwind['130m ws']<=11)).values)
+#     la1 = la.sel(XTIME=((vwwind['130m ws']>3) & (vwwind['130m ws']<=11)).values)
+    nwf1 = nwf.sel(XTIME=((vwwind['130m ws']>3) & (vwwind['130m ws']<=11) & 
+                          (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
+                          (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
+    la1 = la.sel(XTIME=((vwwind['130m ws']>3) & (vwwind['130m ws']<=11) & 
+                        (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
+                        (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
     m = plot_var_vw(nwf1, la1, var_name, '3-11 m s$^{-1}$', ax1)
     del nwf1, la1
     
     # 11+ m/s
-    nwf2 = nwf.sel(XTIME=(vwwind['130m ws']>11).values)
-    la2 = la.sel(XTIME=(vwwind['130m ws']>11).values)
+#     nwf2 = nwf.sel(XTIME=(vwwind['130m ws']>11).values)
+#     la2 = la.sel(XTIME=(vwwind['130m ws']>11).values)
+    nwf2 = nwf.sel(XTIME=((vwwind['130m ws']>11) & 
+                          (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
+                          (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
+    la2 = la.sel(XTIME=((vwwind['130m ws']>11) & 
+                        (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
+                        (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
     m = plot_var_vw(nwf2, la2, var_name, '11+ m s$^{-1}$', ax2)
     del nwf2, la2
     
     ax0.set_ylabel('Latitude [degrees]', fontsize=14)
     ax0.set_yticks(np.arange(40.5, 42.1, .5), crs=ccrs.PlateCarree())
+    ax0.set_yticklabels(np.arange(40.5, 42.1, .5), fontsize=12)
     ax0.yaxis.set_major_formatter(lat_formatter)
 
     for ax in axs:
         ax.set_xlabel('Longitude [degrees]', fontsize=14)
         ax.set_xticks(np.arange(-71.5, -69.5, .5), crs=ccrs.PlateCarree())
+        ax.set_xticklabels(np.arange(-71.5, -69.5, .5), fontsize=12)
         ax.xaxis.set_major_formatter(lon_formatter)
 
     fig.subplots_adjust(right=0.8, wspace=0.05)
@@ -223,7 +248,7 @@ def wspd_panel(nwf, la, var_name, h):
     cbar.ax.tick_params(labelsize=13)
     cbar.set_label(label='LA100 - NWF', size=14)
 
-    fig.savefig(f'plots/difference_maps/panels/{var_name}{h}_wspd_panel.png', bbox_inches='tight')
+    fig.savefig(f'plots/difference_maps/panels/{var_name}_wspd_panel.png', bbox_inches='tight')
     
     plt.close()
 
@@ -236,11 +261,15 @@ la_turbines = pd.read_csv('../turbine_locs/la100_turbines.csv', header=None, sep
 f1 = xr.open_dataset('/pl/active/JKL_REAL/N_Atl/reruns_Beiter/wrfouts/nwf/2019/09/wrfout_d02_2019-09-01_00:00:00')
                                
 # nwf and la100 files for each variable
-# qkehub_nwf = xr.open_dataset('out/nwf_QKEhub.nc')
-# qkehub_la = xr.open_dataset('out/la_QKEhub.nc')
+qkehub_nwf = xr.open_dataset('out/nwf_QKEhub.nc')
+qkehub_la = xr.open_dataset('out/la_QKEhub.nc')
+qkehub_nwf = qkehub_nwf.rename_vars({'QKE': 'QKEhub'})
+qkehub_la = qkehub_la.rename_vars({'QKE': 'QKEhub'})
 
-qkehub_nwf = xr.open_dataset('out/nwf_QKE.nc') # ACTUALLY SFC!!
-qkehub_la = xr.open_dataset('out/la_QKE.nc')
+qkesfc_nwf = xr.open_dataset('out/nwf_QKE.nc')
+qkesfc_la = xr.open_dataset('out/la_QKE.nc')
+qkesfc_nwf = qkesfc_nwf.rename_vars({'QKE': 'QKEsfc'})
+qkesfc_la = qkesfc_la.rename_vars({'QKE': 'QKEsfc'})
 
 hfx_nwf = xr.open_dataset('out/nwf_HFX.nc')
 hfx_la = xr.open_dataset('out/la_HFX.nc')
@@ -272,26 +301,23 @@ lon_formatter = LongitudeFormatter()
 lat_formatter = LatitudeFormatter()
 
 # make lists of each dataset and variable name
-var_names = np.array(['QKE', 'HFX', 'PBLH', 'T2', 'hub_wspd'])
-data_list = [[qkehub_nwf, qkehub_la], [hfx_nwf, hfx_la], [pbl_nwf, pbl_la], [t2_nwf, t2_la], [wshub_nwf, wshub_la]]
+var_names = np.array(['QKEhub', 'QKEsfc', 'HFX', 'PBLH', 'T2', 'hub_wspd'])
+data_list = [[qkehub_nwf, qkehub_la], [qkesfc_nwf, qkesfc_la], [hfx_nwf, hfx_la], [pbl_nwf, pbl_la], [t2_nwf, t2_la], [wshub_nwf, wshub_la]]
 
 
 # ---- MAKE PLOTS FOR EACH VARIABLE ----
 
 # subset just variables we want
-idxs = np.array([0])
+idxs = np.array([0, 1, 2, 3, 4, 5])
 var_names = [var_names[i] for i in idxs]
 data_list = [data_list[i] for i in idxs]
 
 # make panels for each variable
 for i, var in enumerate(data_list):
-    h = ''
-    if var_names[i] == 'QKE':
-        h = 'sfc'
     print(f'{var_names[i]}')
     print('- Generating stability panel')
-    stablity_panel(var[0], var[1], var_names[i], h=h)
-    print('- Generating wind direction panel')
-    wd_panel(var[0], var[1], var_names[i], h=h)
+    stablity_panel(var[0], var[1], var_names[i])
+#     print('- Generating wind direction panel')
+#     wd_panel(var[0], var[1], var_names[i], h=h)
     print('- Generating wind speed panel')
-    wspd_panel(var[0], var[1], var_names[i], h=h)
+    wspd_panel(var[0], var[1], var_names[i])
