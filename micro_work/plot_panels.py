@@ -48,13 +48,13 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
     elif variable == 'PBLH':
         levels = np.arange(-120, 121, 20)
     elif variable == 'QKEhub':
-        levels = np.arange(-2.5, 2.55, 0.25) # hub
+        levels = np.arange(-2.5, 2.55, 0.5) # hub
     elif variable == 'QKEsfc':
-        levels = np.arange(-0.5, 0.55, 0.05) # surface
+        levels = np.arange(-0.5, 0.55, 0.1) # surface
     elif variable == 'hub_wspd':
         levels = np.arange(-4, 4.5, 0.5)
     else: #T2
-        levels = np.arange(-0.25, 0.26, 0.025)
+        levels = np.arange(-0.25, 0.26, 0.05)
     
     # plot turbines
     ax.scatter(la_turbines[1], la_turbines[0], s=3, color='grey')
@@ -207,10 +207,10 @@ def wspd_panel(nwf, la, var_name):
 #     la0 = la.sel(XTIME=(vwwind['130m ws']<=3).values)
     nwf0 = nwf.sel(XTIME=((vwwind['130m ws']<=3) & 
                           (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
-                          (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
+                          (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<500)).values)
     la0 = la.sel(XTIME=((vwwind['130m ws']<=3) & 
                         (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
-                        (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
+                        (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<500)).values)
     m = plot_var_vw(nwf0, la0, var_name, '0-3 m s$^{-1}$', ax0)
     del nwf0, la0
     
@@ -219,10 +219,10 @@ def wspd_panel(nwf, la, var_name):
 #     la1 = la.sel(XTIME=((vwwind['130m ws']>3) & (vwwind['130m ws']<=11)).values)
     nwf1 = nwf.sel(XTIME=((vwwind['130m ws']>3) & (vwwind['130m ws']<=11) & 
                           (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
-                          (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
+                          (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<500)).values)
     la1 = la.sel(XTIME=((vwwind['130m ws']>3) & (vwwind['130m ws']<=11) & 
                         (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
-                        (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
+                        (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<500)).values)
     m = plot_var_vw(nwf1, la1, var_name, '3-11 m s$^{-1}$', ax1)
     del nwf1, la1
     
@@ -231,10 +231,10 @@ def wspd_panel(nwf, la, var_name):
 #     la2 = la.sel(XTIME=(vwwind['130m ws']>11).values)
     nwf2 = nwf.sel(XTIME=((vwwind['130m ws']>11) & 
                           (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
-                          (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
+                          (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<500)).values)
     la2 = la.sel(XTIME=((vwwind['130m ws']>11) & 
                         (vwwind['130m wd']>180) & (vwwind['130m wd']<=270) & 
-                        (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<1000)).values)
+                        (vw_stab.RMOL[::6].values>0) & (vw_stab.RMOL[::6].values<500)).values)
     m = plot_var_vw(nwf2, la2, var_name, '11+ m s$^{-1}$', ax2)
     del nwf2, la2
     
@@ -317,7 +317,7 @@ data_list = [[qkehub_nwf, qkehub_la], [qkesfc_nwf, qkesfc_la], [hfx_nwf, hfx_la]
 # ---- MAKE PLOTS FOR EACH VARIABLE ----
 
 # subset just variables we want
-idxs = np.array([0])
+idxs = np.array([0, 1, 2, 3, 4, 5])
 var_names = [var_names[i] for i in idxs]
 data_list = [data_list[i] for i in idxs]
 
@@ -326,7 +326,7 @@ for i, var in enumerate(data_list):
     print(f'{var_names[i]}')
     print('- Generating stability panel')
     stablity_panel(var[0], var[1], var_names[i])
-#     print('- Generating wind direction panel')
-#     wd_panel(var[0], var[1], var_names[i], h=h)
-#     print('- Generating wind speed panel')
-#     wspd_panel(var[0], var[1], var_names[i])
+    print('- Generating wind direction panel')
+    wd_panel(var[0], var[1], var_names[i], h=h)
+    print('- Generating wind speed panel')
+    wspd_panel(var[0], var[1], var_names[i])
