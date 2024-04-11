@@ -71,7 +71,7 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
     lon_formatter = LongitudeFormatter()
     lat_formatter = LatitudeFormatter()
 
-    ax.set_title(f'{variable} difference; {desc} ; {num_points} hours', fontsize=13)
+    ax.set_title(f'{variable}; {desc}', fontsize=13)
     
     return m
 
