@@ -14,6 +14,7 @@ pd.options.mode.chained_assignment = None
 from matplotlib.ticker import PercentFormatter
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import utils
+import string
     
 def plot_var_vw(nwf, la100, variable, desc, ax):
     '''
@@ -33,7 +34,7 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
    
     # calculate the difference between nwf and la100
     diff = la100[variable].mean(dim='XTIME') - nwf[variable].mean(dim='XTIME')
-    print(f'--- diff calculated: {desc}, {variable}, {diff.min().values:.3f}, {diff.max().values:.3f}')
+    print(f'--- diff calculated: {desc}, {variable}, {diff.min().values:.3f}, {diff.max().values:.3f}, mean: {diff.mean().values:.3f}, {len(nwf.XTIME.values)} hrs')
     
     # determine how many points we have
     num_points = len(nwf.XTIME.values)
@@ -71,7 +72,7 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
     lon_formatter = LongitudeFormatter()
     lat_formatter = LatitudeFormatter()
 
-    ax.set_title(f'{variable}; {desc}', fontsize=13)
+    ax.set_title(f'{variable}; {desc}', fontsize=15)
     
     return m
 
@@ -123,6 +124,10 @@ def wd_panel(nwf, la, var_name):
         ax.set_xticks(np.arange(-71.5, -69.5, .5), crs=ccrs.PlateCarree())
         ax.set_xticklabels(np.arange(-71.5, -69.5, .5), fontsize=12)
         ax.xaxis.set_major_formatter(lon_formatter)
+        
+    for n, ax inn enumerate(axs):
+        ax.text(-0.05, 1.05, string.ascii_uppercase[n], transform=ax.transAxes, 
+            size=20, weight='bold')
 
     fig.subplots_adjust(right=0.8, wspace=0.04, hspace=0)
     cbar_ax = fig.add_axes([0.83, 0.15, 0.02, 0.67])
@@ -168,11 +173,13 @@ def stablity_panel(nwf, la, var_name):
     ax0.set_yticklabels(np.arange(40.5, 42.1, .5), fontsize=12)
     ax0.yaxis.set_major_formatter(lat_formatter)
 
-    for ax in axs:
+    for n, ax in enumerate(axs):
         ax.set_xlabel('Longitude [degrees]', fontsize=14)
         ax.set_xticks(np.arange(-71.5, -69.5, .5), crs=ccrs.PlateCarree())
         ax.set_xticklabels(np.arange(-71.5, -69.5, .5), fontsize=12)
         ax.xaxis.set_major_formatter(lon_formatter)
+        ax.text(-0.05, 1.05, string.ascii_uppercase[n], transform=ax.transAxes, 
+            size=20, weight='bold')
 
     fig.subplots_adjust(right=0.8, wspace=0.05)
     cbar_ax = fig.add_axes([0.81, 0.15, 0.015, 0.67])
@@ -236,11 +243,13 @@ def wspd_panel(nwf, la, var_name):
     ax0.set_yticklabels(np.arange(40.5, 42.1, .5), fontsize=12)
     ax0.yaxis.set_major_formatter(lat_formatter)
 
-    for ax in axs:
+    for n, ax in enumerate(axs):
         ax.set_xlabel('Longitude [degrees]', fontsize=14)
         ax.set_xticks(np.arange(-71.5, -69.5, .5), crs=ccrs.PlateCarree())
         ax.set_xticklabels(np.arange(-71.5, -69.5, .5), fontsize=12)
         ax.xaxis.set_major_formatter(lon_formatter)
+        ax.text(-0.05, 1.05, string.ascii_uppercase[n], transform=ax.transAxes, 
+            size=20, weight='bold')
 
     fig.subplots_adjust(right=0.8, wspace=0.05)
     cbar_ax = fig.add_axes([0.81, 0.15, 0.015, 0.67])
@@ -308,7 +317,7 @@ data_list = [[qkehub_nwf, qkehub_la], [qkesfc_nwf, qkesfc_la], [hfx_nwf, hfx_la]
 # ---- MAKE PLOTS FOR EACH VARIABLE ----
 
 # subset just variables we want
-idxs = np.array([1])
+idxs = np.array([0])
 var_names = [var_names[i] for i in idxs]
 data_list = [data_list[i] for i in idxs]
 
@@ -319,5 +328,5 @@ for i, var in enumerate(data_list):
     stablity_panel(var[0], var[1], var_names[i])
 #     print('- Generating wind direction panel')
 #     wd_panel(var[0], var[1], var_names[i], h=h)
-    print('- Generating wind speed panel')
-    wspd_panel(var[0], var[1], var_names[i])
+#     print('- Generating wind speed panel')
+#     wspd_panel(var[0], var[1], var_names[i])
