@@ -49,7 +49,7 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
     elif variable == 'QKEhub':
         levels = np.arange(-2.5, 2.55, 0.25) # hub
     elif variable == 'QKEsfc':
-        levels = np.arange(-0.25, 0.26, 0.025) # surface
+        levels = np.arange(-0.5, 0.55, 0.05) # surface
     elif variable == 'hub_wspd':
         levels = np.arange(-4, 4.5, 0.5)
     else: #T2
@@ -146,20 +146,20 @@ def stablity_panel(nwf, la, var_name):
     ax2 = axs[2]
 
     # stable
-    nwf0 = nwf.sel(XTIME=((vw_stab.RMOL[::6]>0) & (vw_stab.RMOL[::6]<1000)).values)
-    la0 = la.sel(XTIME=((vw_stab.RMOL[::6]>0) & (vw_stab.RMOL[::6]<1000)).values)
+    nwf0 = nwf.sel(XTIME=((vw_stab.RMOL[::6]>0) & (vw_stab.RMOL[::6]<500)).values)
+    la0 = la.sel(XTIME=((vw_stab.RMOL[::6]>0) & (vw_stab.RMOL[::6]<500)).values)
     m = plot_var_vw(nwf0, la0, var_name, 'stable', ax0)
     del nwf0, la0
     
     # neutral
-    nwf1 = nwf.sel(XTIME=((vw_stab.RMOL[::6]<-1000) | (vw_stab.RMOL[::6]>1000)).values)
-    la1 = la.sel(XTIME=((vw_stab.RMOL[::6]<-1000) | (vw_stab.RMOL[::6]>1000)).values)
+    nwf1 = nwf.sel(XTIME=((vw_stab.RMOL[::6]<-500) | (vw_stab.RMOL[::6]>500)).values)
+    la1 = la.sel(XTIME=((vw_stab.RMOL[::6]<-500) | (vw_stab.RMOL[::6]>500)).values)
     m = plot_var_vw(nwf1, la1, var_name, 'neutral', ax1)
     del nwf1, la1
     
     # unstable
-    nwf2 = nwf.sel(XTIME=((vw_stab.RMOL[::6]<0) & (vw_stab.RMOL[::6]>-1000)).values)
-    la2 = la.sel(XTIME=((vw_stab.RMOL[::6]<0) & (vw_stab.RMOL[::6]>-1000)).values)
+    nwf2 = nwf.sel(XTIME=((vw_stab.RMOL[::6]<0) & (vw_stab.RMOL[::6]>-500)).values)
+    la2 = la.sel(XTIME=((vw_stab.RMOL[::6]<0) & (vw_stab.RMOL[::6]>-500)).values)
     m = plot_var_vw(nwf2, la2, var_name, 'unstable', ax2)
     del nwf2, la2
     
@@ -308,7 +308,7 @@ data_list = [[qkehub_nwf, qkehub_la], [qkesfc_nwf, qkesfc_la], [hfx_nwf, hfx_la]
 # ---- MAKE PLOTS FOR EACH VARIABLE ----
 
 # subset just variables we want
-idxs = np.array([0, 1, 2, 3, 4, 5])
+idxs = np.array([1])
 var_names = [var_names[i] for i in idxs]
 data_list = [data_list[i] for i in idxs]
 
