@@ -50,7 +50,7 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
     elif variable == 'QKEhub':
         levels = np.arange(-2.5, 2.55, 0.5) # hub
     elif variable == 'QKEsfc':
-        levels = np.arange(-0.5, 0.55, 0.1) # surface
+        levels = np.arange(-0.5, 0.55, 0.05) # surface
     elif variable == 'hub_wspd':
         levels = np.arange(-4, 4.5, 0.5)
     else: #T2
@@ -125,8 +125,8 @@ def wd_panel(nwf, la, var_name):
         ax.set_xticklabels(np.arange(-71.5, -69.5, .5), fontsize=12)
         ax.xaxis.set_major_formatter(lon_formatter)
         
-    for n, ax inn enumerate(axs):
-        ax.text(-0.05, 1.05, string.ascii_uppercase[n], transform=ax.transAxes, 
+    for n, ax in enumerate(axs.flat):
+        ax.text(-0.05, 1.05, string.ascii_lowercase[n], transform=ax.transAxes, 
             size=20, weight='bold')
 
     fig.subplots_adjust(right=0.8, wspace=0.04, hspace=0)
@@ -178,7 +178,7 @@ def stablity_panel(nwf, la, var_name):
         ax.set_xticks(np.arange(-71.5, -69.5, .5), crs=ccrs.PlateCarree())
         ax.set_xticklabels(np.arange(-71.5, -69.5, .5), fontsize=12)
         ax.xaxis.set_major_formatter(lon_formatter)
-        ax.text(-0.05, 1.05, string.ascii_uppercase[n], transform=ax.transAxes, 
+        ax.text(-0.05, 1.05, string.ascii_lowercase[n], transform=ax.transAxes, 
             size=20, weight='bold')
 
     fig.subplots_adjust(right=0.8, wspace=0.05)
@@ -248,7 +248,7 @@ def wspd_panel(nwf, la, var_name):
         ax.set_xticks(np.arange(-71.5, -69.5, .5), crs=ccrs.PlateCarree())
         ax.set_xticklabels(np.arange(-71.5, -69.5, .5), fontsize=12)
         ax.xaxis.set_major_formatter(lon_formatter)
-        ax.text(-0.05, 1.05, string.ascii_uppercase[n], transform=ax.transAxes, 
+        ax.text(-0.05, 1.05, string.ascii_lowercase[n], transform=ax.transAxes, 
             size=20, weight='bold')
 
     fig.subplots_adjust(right=0.8, wspace=0.05)
@@ -327,6 +327,6 @@ for i, var in enumerate(data_list):
     print('- Generating stability panel')
     stablity_panel(var[0], var[1], var_names[i])
     print('- Generating wind direction panel')
-    wd_panel(var[0], var[1], var_names[i], h=h)
+    wd_panel(var[0], var[1], var_names[i])
     print('- Generating wind speed panel')
     wspd_panel(var[0], var[1], var_names[i])
