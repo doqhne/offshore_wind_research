@@ -31,10 +31,13 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
     --- m, mappable to use for the figure colorbar, a figure is also saved
     '''
     
+    # subset to region of interest
+    la100 = la100.isel(south_north=slice(155, 258), west_east=slice(172, 298))
+    nwf = nwf.isel(south_north=slice(155, 258), west_east=slice(172, 298))
    
     # calculate the difference between nwf and la100
     diff = la100[variable].mean(dim='XTIME') - nwf[variable].mean(dim='XTIME')
-    print(f'--- diff calculated: {desc}, {variable}, {diff.min().values:.3f}, {diff.max().values:.3f}, mean: {diff.mean().values:.3f}, {len(nwf.XTIME.values)} hrs')
+    print(f'--- diff calculated: {desc}, {variable}, min: {diff.min().values:.3f}, max: {diff.max().values:.3f}, NWF mean: {nwf[variable].mean().values}, {len(nwf.XTIME.values)} hrs')
     
     # determine how many points we have
     num_points = len(nwf.XTIME.values)
@@ -53,14 +56,16 @@ def plot_var_vw(nwf, la100, variable, desc, ax):
         levels = np.arange(-0.5, 0.55, 0.05) # surface
     elif variable == 'hub_wspd':
         levels = np.arange(-4, 4.5, 0.5)
+    elif variable == '10m_wspd':
+        levels = np.arange(-0.8, 0.81, 0.1)
     else: #T2
         levels = np.arange(-0.25, 0.26, 0.05)
     
     # plot turbines
     ax.scatter(la_turbines[1], la_turbines[0], s=3, color='grey')
     
-    m = ax.contourf(lons.isel(Time=0), 
-                    lats.isel(Time=0), 
+    m = ax.contourf(lons.isel(Time=0, south_north=slice(155, 258), west_east=slice(172, 298)), 
+                    lats.isel(Time=0, south_north=slice(155, 258), west_east=slice(172, 298)), 
                     diff,
                     cmap=cmap,
                     levels=levels,
@@ -294,6 +299,11 @@ wshub_la = xr.open_dataset('out/la_hubws.nc')
 wshub_nwf = wshub_nwf.rename_vars({'__xarray_dataarray_variable__': 'hub_wspd'})
 wshub_la = wshub_la.rename_vars({'__xarray_dataarray_variable__': 'hub_wspd'})
 
+ws10_nwf = xr.open_dataset('out/nwf_ws10.nc')
+ws10_la = xr.open_dataset('out/la_ws10.nc')
+ws10_nwf = ws10_nwf.rename_vars({'__xarray_dataarray_variable__': '10m_wspd'})
+ws10_la = ws10_la.rename_vars({'__xarray_dataarray_variable__': '10m_wspd'})
+
 # hub height wind speed, wind direction, and atmospheric stability at ONE centroid
 vwwind = pd.read_csv('../make_wr/vwcent_wind.csv')
 vw_stab = xr.open_dataset('../rmol_data/rmol_calc_vwmid3.nc')
@@ -310,20 +320,20 @@ lon_formatter = LongitudeFormatter()
 lat_formatter = LatitudeFormatter()
 
 # make lists of each dataset and variable name
-var_names = np.array(['QKEhub', 'QKEsfc', 'HFX', 'PBLH', 'T2', 'hub_wspd'])
-data_list = [[qkehub_nwf, qkehub_la], [qkesfc_nwf, qkesfc_la], [hfx_nwf, hfx_la], [pbl_nwf, pbl_la], [t2_nwf, t2_la], [wshub_nwf, wshub_la]]
+var_names = np.array(['QKEhub', 'QKEsfc', 'HFX', 'PBLH', 'T2', 'hub_wspd', '10m_wspd'])
+data_list = [[qkehub_nwf, qkehub_la], [qkesfc_nwf, qkesfc_la], [hfx_nwf, hfx_la], [pbl_nwf, pbl_la], [t2_nwf, t2_la], [wshub_nwf, wshub_la], [ws10_nwf, ws10_la]]
 
 
 # ---- MAKE PLOTS FOR EACH VARIABLE ----
 
 # subset just variables we want
-idxs = np.array([0, 1, 2, 3, 4, 5])
+idxs = np.array([0, 1, 2, 3, 4, 5, 6])
 var_names = [var_names[i] for i in idxs]
 data_list = [data_list[i] for i in idxs]
 
 # make panels for each variable
 for i, var in enumerate(data_list):
-    print(f'{var_names[i]}')
+    print(var_names[i])
     print('- Generating stability panel')
     stablity_panel(var[0], var[1], var_names[i])
     print('- Generating wind direction panel')
