@@ -238,7 +238,7 @@ def plot_concave_hull(time, thresh=0.1, eps=0.1, save_plot=False):
         lgnd.legend_handles[1]._sizes = [60]
         lgnd.legend_handles[2]._sizes = [60]
         
-        plt.savefig(f'plots/concave_hulls2/hull{time}_{nwf_files_stable[time][72:-3]}.png')
+        plt.savefig(f'plots/concave_hulls_US/hull{time}_{nwf_files_stable[time][72:-3]}.png')
         plt.close()
         
     return area, dist, flag, pblh_lease
@@ -258,29 +258,21 @@ la_points = np.array(list((zip(la_turbines['longitude'], la_turbines['latitude']
 turb_pgon = Polygon(concave_hull(la_points, length_threshold=0.05))
 
 # subset for stable conditions only
-stable = ((vw_stab.RMOL[::6]>0) & (vw_stab.RMOL[::6]<1000)).values
+stable = ((vw_stab.RMOL[::6]>0) & (vw_stab.RMOL[::6]<500)).values
 nwf_files_stable = np.array(nwf_files)[stable]
 la_files_stable = np.array(la_files)[stable]
 wdirs_stable = wdirs[stable]
+print(len(nwf_files_stable))
 
 # make lists to save wake area and pblh info into
 wake_areas = []
 dists = []
-# ONElas = []
-# ONEnwfs = []
-# medlas = []
-# mednwfs = []
-# mnlas = []
-# mnnwfs = []
-# uplas = []
-# upnwfs = []
 flags = []
 la_pblhs = []
 
 # loop through each stable time: make a plot of the wake area and save the pblh, wake info to lists
 start = 0
 for time in range(start, len(nwf_files_stable)):
-#     area, dist, ONEla, ONEnwf, medla, mednwf, mnla, mnnwf, upla, upnwf, flag = gen_concave_hull(time, save_plot=False)
     if time%5==0:
         save_plot = True
     else:
@@ -288,14 +280,6 @@ for time in range(start, len(nwf_files_stable)):
     area, dist, flag, la_pblh = plot_concave_hull(time, save_plot=save_plot)
     wake_areas.append(area)
     dists.append(dist)
-#     ONElas.append(ONEla)
-#     ONEnwfs.append(ONEnwf)
-#     medlas.append(medla)
-#     mednwfs.append(mednwf)
-#     mnlas.append(mnla)
-#     mnnwfs.append(mnnwf)
-#     uplas.append(upla)
-#     upnwfs.append(upnwf)
     flags.append(flag)
     la_pblhs.append(la_pblh)
     
@@ -304,33 +288,17 @@ for time in range(start, len(nwf_files_stable)):
         df['time'] = vw_stab.Time[::6][stable][start:time+1]
         df['wake_areas'] = wake_areas
         df['wake_dist_km'] = dists
-#         df['ONEcent_nwf'] = ONEnwfs
-#         df['ONEcent_la'] = ONElas
-#         df['wake_median_nwf'] = mednwfs
-#         df['wake_median_la'] = medlas
-#         df['wake_mean_nwf'] = mnnwfs
-#         df['wake_mean_la'] = mnlas
-#         df['upstream_nwf'] = upnwfs
-#         df['upstream_la'] = uplas
         df['flag'] = flags
         df['mean_la_pblh'] = la_pblhs
 
-        df.to_csv(f'wakes3_{time}.csv')
+        df.to_csv(f'wakes3US_{time}.csv')
         del df
     
 df = pd.DataFrame()
 df['time'] = vw_stab.Time[::6][stable][start:time+1]
 df['wake_areas'] = wake_areas
 df['wake_dist_km'] = dists
-# df['ONEcent_nwf'] = ONEnwfs
-# df['ONEcent_la'] = ONElas
-# df['wake_median_nwf'] = mednwfs
-# df['wake_median_la'] = medlas
-# df['wake_mean_nwf'] = mnnwfs
-# df['wake_mean_la'] = mnlas
-# df['upstream_nwf'] = upnwfs
-# df['upstream_la'] = uplas
 df['flag'] = flags
 df['mean_la_pblh'] = la_pblhs
 
-df.to_csv('wakes3.csv')
+df.to_csv('wakes3_US.csv')
