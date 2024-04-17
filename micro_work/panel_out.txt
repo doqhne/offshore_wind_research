@@ -1,0 +1,98 @@
+QKEhub
+- Generating stability panel
+--- diff calculated: stable, QKEhub, min: -0.158, max: 1.955, NWF mean: 0.5276243090629578, 3898 hrs
+--- diff calculated: neutral, QKEhub, min: -0.075, max: 2.722, NWF mean: 1.521061658859253, 987 hrs
+--- diff calculated: unstable, QKEhub, min: -0.086, max: 2.051, NWF mean: 1.1459171772003174, 3899 hrs
+- Generating wind direction panel
+--- diff calculated: NW, QKEhub, min: -0.301, max: 2.309, NWF mean: 1.2366163730621338, 2528 hrs
+--- diff calculated: NE, QKEhub, min: -0.333, max: 2.152, NWF mean: 1.092635154724121, 1805 hrs
+--- diff calculated: SW, QKEhub, min: -0.218, max: 2.070, NWF mean: 0.6490693688392639, 3300 hrs
+--- diff calculated: SE, QKEhub, min: -0.265, max: 1.746, NWF mean: 0.6825275421142578, 1151 hrs
+- Generating wind speed panel
+--- diff calculated: 0-3 m s$^{-1}$, QKEhub, min: -0.103, max: 0.374, NWF mean: 0.3280319273471832, 61 hrs
+--- diff calculated: 3-11 m s$^{-1}$, QKEhub, min: -0.120, max: 1.746, NWF mean: 0.3489871621131897, 1157 hrs
+--- diff calculated: 11+ m s$^{-1}$, QKEhub, min: -0.362, max: 2.682, NWF mean: 0.7007765173912048, 1334 hrs
+QKEsfc
+- Generating stability panel
+--- diff calculated: stable, QKEsfc, min: -0.254, max: 0.087, NWF mean: 0.7759039998054504, 3898 hrs
+--- diff calculated: neutral, QKEsfc, min: -0.128, max: 0.393, NWF mean: 2.0485246181488037, 987 hrs
+--- diff calculated: unstable, QKEsfc, min: -0.073, max: 0.624, NWF mean: 1.3258554935455322, 3899 hrs
+- Generating wind direction panel
+--- diff calculated: NW, QKEsfc, min: -0.133, max: 0.572, NWF mean: 1.4722546339035034, 2528 hrs
+--- diff calculated: NE, QKEsfc, min: -0.140, max: 0.522, NWF mean: 1.3731836080551147, 1805 hrs
+--- diff calculated: SW, QKEsfc, min: -0.308, max: 0.175, NWF mean: 0.9198234677314758, 3300 hrs
+--- diff calculated: SE, QKEsfc, min: -0.216, max: 0.289, NWF mean: 0.8514507412910461, 1151 hrs
+- Generating wind speed panel
+--- diff calculated: 0-3 m s$^{-1}$, QKEsfc, min: -0.137, max: 0.196, NWF mean: 0.4251560866832733, 61 hrs
+--- diff calculated: 3-11 m s$^{-1}$, QKEsfc, min: -0.237, max: 0.101, NWF mean: 0.5481252074241638, 1157 hrs
+--- diff calculated: 11+ m s$^{-1}$, QKEsfc, min: -0.499, max: 0.120, NWF mean: 1.0486654043197632, 1334 hrs
+HFX
+- Generating stability panel
+--- diff calculated: stable, HFX, min: -2.058, max: 2.820, NWF mean: -0.39309918880462646, 3898 hrs
+--- diff calculated: neutral, HFX, min: -1.824, max: 1.482, NWF mean: 16.338817596435547, 987 hrs
+--- diff calculated: unstable, HFX, min: -3.293, max: 0.930, NWF mean: 48.34269332885742, 3899 hrs
+- Generating wind direction panel
+--- diff calculated: NW, HFX, min: -3.357, max: 0.895, NWF mean: 46.81800842285156, 2528 hrs
+--- diff calculated: NE, HFX, min: -2.313, max: 2.256, NWF mean: 33.495582580566406, 1805 hrs
+--- diff calculated: SW, HFX, min: -2.227, max: 2.543, NWF mean: 4.227987766265869, 3300 hrs
+--- diff calculated: SE, HFX, min: -2.627, max: 2.222, NWF mean: 8.961217880249023, 1151 hrs
+- Generating wind speed panel
+--- diff calculated: 0-3 m s$^{-1}$, HFX, min: -13.115, max: 17.764, NWF mean: 24.303808212280273, 61 hrs
+--- diff calculated: 3-11 m s$^{-1}$, HFX, min: -3.037, max: 3.971, NWF mean: 9.382908821105957, 1157 hrs
+--- diff calculated: 11+ m s$^{-1}$, HFX, min: -3.842, max: 2.871, NWF mean: -13.213980674743652, 1334 hrs
+PBLH
+- Generating stability panel
+--- diff calculated: stable, PBLH, min: -47.708, max: 99.041, NWF mean: 268.13409423828125, 3898 hrs
+--- diff calculated: neutral, PBLH, min: -4.433, max: 67.356, NWF mean: 556.2879638671875, 987 hrs
+--- diff calculated: unstable, PBLH, min: -4.086, max: 38.781, NWF mean: 643.6258544921875, 3899 hrs
+- Generating wind direction panel
+--- diff calculated: NW, PBLH, min: -19.224, max: 59.338, NWF mean: 617.6314697265625, 2528 hrs
+--- diff calculated: NE, PBLH, min: -34.787, max: 53.142, NWF mean: 530.0435791015625, 1805 hrs
+--- diff calculated: SW, PBLH, min: -75.676, max: 89.777, NWF mean: 341.8309326171875, 3300 hrs
+--- diff calculated: SE, PBLH, min: -62.053, max: 65.529, NWF mean: 395.17010498046875, 1151 hrs
+- Generating wind speed panel
+--- diff calculated: 0-3 m s$^{-1}$, PBLH, min: -58.656, max: 79.669, NWF mean: 234.9141845703125, 61 hrs
+--- diff calculated: 3-11 m s$^{-1}$, PBLH, min: -59.445, max: 123.444, NWF mean: 252.72425842285156, 1157 hrs
+--- diff calculated: 11+ m s$^{-1}$, PBLH, min: -109.875, max: 97.621, NWF mean: 278.712158203125, 1334 hrs
+T2
+- Generating stability panel
+--- diff calculated: stable, T2, min: -0.113, max: 0.130, NWF mean: 288.1984558105469, 3898 hrs
+--- diff calculated: neutral, T2, min: -0.023, max: 0.049, NWF mean: 282.8139343261719, 987 hrs
+--- diff calculated: unstable, T2, min: -0.048, max: 0.009, NWF mean: 280.868896484375, 3899 hrs
+- Generating wind direction panel
+--- diff calculated: NW, T2, min: -0.025, max: 0.021, NWF mean: 280.3532409667969, 2528 hrs
+--- diff calculated: NE, T2, min: -0.042, max: 0.038, NWF mean: 284.36871337890625, 1805 hrs
+--- diff calculated: SW, T2, min: -0.121, max: 0.135, NWF mean: 287.51190185546875, 3300 hrs
+--- diff calculated: SE, T2, min: -0.060, max: 0.050, NWF mean: 283.9586181640625, 1151 hrs
+- Generating wind speed panel
+--- diff calculated: 0-3 m s$^{-1}$, T2, min: -0.172, max: 0.174, NWF mean: 291.2583923339844, 61 hrs
+--- diff calculated: 3-11 m s$^{-1}$, T2, min: -0.133, max: 0.143, NWF mean: 290.04046630859375, 1157 hrs
+--- diff calculated: 11+ m s$^{-1}$, T2, min: -0.176, max: 0.208, NWF mean: 288.4512634277344, 1334 hrs
+hub_wspd
+- Generating stability panel
+--- diff calculated: stable, hub_wspd, min: -2.759, max: 0.032, NWF mean: 10.52017593383789, 3898 hrs
+--- diff calculated: neutral, hub_wspd, min: -2.066, max: 0.047, NWF mean: 13.276609420776367, 987 hrs
+--- diff calculated: unstable, hub_wspd, min: -1.484, max: -0.002, NWF mean: 8.502240180969238, 3899 hrs
+- Generating wind direction panel
+--- diff calculated: NW, hub_wspd, min: -2.180, max: 0.032, NWF mean: 10.153953552246094, 2528 hrs
+--- diff calculated: NE, hub_wspd, min: -1.815, max: 0.054, NWF mean: 9.316892623901367, 1805 hrs
+--- diff calculated: SW, hub_wspd, min: -2.607, max: 0.068, NWF mean: 10.525801658630371, 3300 hrs
+--- diff calculated: SE, hub_wspd, min: -2.004, max: 0.084, NWF mean: 8.723340034484863, 1151 hrs
+- Generating wind speed panel
+--- diff calculated: 0-3 m s$^{-1}$, hub_wspd, min: -0.435, max: 0.426, NWF mean: 3.582620620727539, 61 hrs
+--- diff calculated: 3-11 m s$^{-1}$, hub_wspd, min: -2.461, max: 0.119, NWF mean: 7.746518611907959, 1157 hrs
+--- diff calculated: 11+ m s$^{-1}$, hub_wspd, min: -3.626, max: 0.053, NWF mean: 14.31586742401123, 1334 hrs
+10m_wspd
+- Generating stability panel
+--- diff calculated: stable, 10m_wspd, min: -0.473, max: 0.325, NWF mean: 5.7407121658325195, 3898 hrs
+--- diff calculated: neutral, 10m_wspd, min: -0.449, max: 0.052, NWF mean: 9.280404090881348, 987 hrs
+--- diff calculated: unstable, 10m_wspd, min: -0.820, max: 0.015, NWF mean: 6.986266136169434, 3899 hrs
+- Generating wind direction panel
+--- diff calculated: NW, 10m_wspd, min: -0.708, max: 0.046, NWF mean: 7.615938186645508, 2528 hrs
+--- diff calculated: NE, 10m_wspd, min: -0.629, max: 0.048, NWF mean: 7.141957759857178, 1805 hrs
+--- diff calculated: SW, 10m_wspd, min: -0.505, max: 0.405, NWF mean: 6.064990520477295, 3300 hrs
+--- diff calculated: SE, 10m_wspd, min: -0.676, max: 0.095, NWF mean: 5.749501705169678, 1151 hrs
+- Generating wind speed panel
+--- diff calculated: 0-3 m s$^{-1}$, 10m_wspd, min: -0.307, max: 0.247, NWF mean: 2.6092288494110107, 61 hrs
+--- diff calculated: 3-11 m s$^{-1}$, 10m_wspd, min: -0.605, max: 0.504, NWF mean: 4.451713562011719, 1157 hrs
+--- diff calculated: 11+ m s$^{-1}$, 10m_wspd, min: -0.697, max: 0.574, NWF mean: 7.351429462432861, 1334 hrs
